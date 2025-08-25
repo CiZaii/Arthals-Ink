@@ -10,9 +10,10 @@
         "@playform/compress": "^0.2.0",
         "@waline/client": "^3.6.0",
         "astro": "^5.12.0",
-        "astro-pure": "1.3.2",
+        "astro-pure": "1.3.3",
         "katex": "^0.16.22",
         "rehype-katex": "^7.0.1",
+        "remark-github-blockquote-alert": "^1.3.0",
         "remark-math": "^6.0.0",
         "sharp": "^0.34.3",
         "typescript": "^5.8.3",
@@ -526,7 +527,7 @@
 
     "astro-eslint-parser": ["astro-eslint-parser@1.2.2", "https://registry.npmmirror.com/astro-eslint-parser/-/astro-eslint-parser-1.2.2.tgz", { "dependencies": { "@astrojs/compiler": "^2.0.0", "@typescript-eslint/scope-manager": "^7.0.0 || ^8.0.0", "@typescript-eslint/types": "^7.0.0 || ^8.0.0", "astrojs-compiler-sync": "^1.0.0", "debug": "^4.3.4", "entities": "^6.0.0", "eslint-scope": "^8.0.1", "eslint-visitor-keys": "^4.0.0", "espree": "^10.0.0", "fast-glob": "^3.3.3", "is-glob": "^4.0.3", "semver": "^7.3.8" } }, "sha512-JepyLROIad6f44uyqMF6HKE2QbunNzp3mYKRcPoDGt0QkxXmH222FAFC64WTyQu2Kg8NNEXHTN/sWuUId9sSxw=="],
 
-    "astro-pure": ["astro-pure@1.3.2", "https://registry.npmmirror.com/astro-pure/-/astro-pure-1.3.2.tgz", { "dependencies": { "@astrojs/mdx": "^4.3.0", "@astrojs/sitemap": "^3.4.1", "@pagefind/default-ui": "^1.3.0", "@unocss/reset": "^66.3.3", "astro": "^5.11.1", "hast-util-select": "^6.0.4", "node-html-parser": "^7.0.1", "pagefind": "^1.3.0", "unocss": "^66.3.3" }, "bin": { "astro-pure": "scripts/index.js" } }, "sha512-yfBxaT1Xmzt1g+VXAV5e8cC6QVXgiTiFVIyyAWmsXQ14riVhlpWVA6JB117+7mjs476J65poKb6grRJSgA3biw=="],
+    "astro-pure": ["astro-pure@1.3.3", "https://registry.npmmirror.com/astro-pure/-/astro-pure-1.3.3.tgz", { "dependencies": { "@astrojs/mdx": "^4.3.1", "@astrojs/sitemap": "^3.4.1", "@pagefind/default-ui": "^1.3.0", "@unocss/reset": "^66.3.3", "astro": "^5.12.0", "hast-util-select": "^6.0.4", "node-html-parser": "^7.0.1", "pagefind": "^1.3.0", "unocss": "^66.3.3" }, "bin": { "astro-pure": "scripts/index.js" } }, "sha512-xadlifjSNf7zV2A467USvVQvYxzKWdd2muscwPs7VzE6MMLVnbf4o2yOSKKmDEgpV1HYjDXVCW7H+lkW7cdqvQ=="],
 
     "astrojs-compiler-sync": ["astrojs-compiler-sync@1.1.1", "https://registry.npmmirror.com/astrojs-compiler-sync/-/astrojs-compiler-sync-1.1.1.tgz", { "dependencies": { "synckit": "^0.11.0" }, "peerDependencies": { "@astrojs/compiler": ">=0.27.0" } }, "sha512-0mKvB9sDQRIZPsEJadw6OaFbGJ92cJPPR++ICca9XEyiUAZqgVuk25jNmzHPT0KF80rI94trSZrUR5iHFXGGOQ=="],
 
@@ -1253,6 +1254,8 @@
     "relateurl": ["relateurl@0.2.7", "https://registry.npmmirror.com/relateurl/-/relateurl-0.2.7.tgz", {}, "sha512-G08Dxvm4iDN3MLM0EsP62EDV9IuhXPR6blNz6Utcp7zyV3tr4HVNINt6MpaRWbxoOHT3Q7YN2P+jaHX8vUbgog=="],
 
     "remark-gfm": ["remark-gfm@4.0.1", "https://registry.npmmirror.com/remark-gfm/-/remark-gfm-4.0.1.tgz", { "dependencies": { "@types/mdast": "^4.0.0", "mdast-util-gfm": "^3.0.0", "micromark-extension-gfm": "^3.0.0", "remark-parse": "^11.0.0", "remark-stringify": "^11.0.0", "unified": "^11.0.0" } }, "sha512-1quofZ2RQ9EWdeN34S79+KExV1764+wCUGop5CPL1WGdD0ocPpu91lzPGbwWMECpEpd42kJGQwzRfyov9j4yNg=="],
+
+    "remark-github-blockquote-alert": ["remark-github-blockquote-alert@1.3.1", "https://registry.npmmirror.com/remark-github-blockquote-alert/-/remark-github-blockquote-alert-1.3.1.tgz", { "dependencies": { "unist-util-visit": "^5.0.0" } }, "sha512-OPNnimcKeozWN1w8KVQEuHOxgN3L4rah8geMOLhA5vN9wITqU4FWD+G26tkEsCGHiOVDbISx+Se5rGZ+D1p0Jg=="],
 
     "remark-math": ["remark-math@6.0.0", "https://registry.npmmirror.com/remark-math/-/remark-math-6.0.0.tgz", { "dependencies": { "@types/mdast": "^4.0.0", "mdast-util-math": "^3.0.0", "micromark-extension-math": "^3.0.0", "unified": "^11.0.0" } }, "sha512-MMqgnP74Igy+S3WwnhQ7kqGlEerTETXMvJhrUzDikVZ2/uogJCb+WHUg97hK9/jcfc0dkD73s3LN8zU49cTEtA=="],
 
