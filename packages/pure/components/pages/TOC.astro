@@ -12,7 +12,9 @@ interface Props {
 
 const { headings, class: className, ...props } = Astro.props
 
-const toc = generateToc(headings)
+// Add safety check for headings
+const safeHeadings = headings || []
+const toc = generateToc(safeHeadings)
 ---
 
 <toc-heading class={className} {...props}>

@@ -7,7 +7,7 @@ tags:
   - 性能调优
   - 诊断工具
 language: 中文
-abbrlink: arthas
+slug: arthas
 ---
 ## 🛠️ Arthas 简介
 

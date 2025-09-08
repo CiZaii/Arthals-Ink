@@ -5,6 +5,7 @@ draft: true
 tags:
   - 博客主题
   - 指南
+slug: theme-guide
 language: '中文'
 description: 基于Astro的静态博客主题上手指南，介绍主题配置与新文章创建，快速搭建个人博客。
 ---

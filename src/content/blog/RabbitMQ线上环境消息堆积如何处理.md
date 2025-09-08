@@ -7,7 +7,7 @@ tags:
   - RabbitMQ
   - 消息中间件
 language: 中文
-abbrlink: rabbitmq-message-backlog-handling
+slug: rabbitmq-message-backlog-solution
 ---
 
 ## RabbitMQ消息堆积解决方案

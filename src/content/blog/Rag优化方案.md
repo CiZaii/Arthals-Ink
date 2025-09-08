@@ -5,7 +5,7 @@ publishDate: 2025-08-07
 tags:
   - Rag
 language: 中文
-abbrlink: rag
+slug: rag
 ---
 
 ## 前言

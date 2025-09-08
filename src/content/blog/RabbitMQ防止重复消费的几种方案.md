@@ -7,7 +7,7 @@ tags:
   - RabbitMQ
   - 消息中间件
 language: 中文
-abbrlink: rabbitmq-dedup
+slug: rabbitmq-dedup
 ---
 
 ## RabbitMQ防止重复消费的几种方案

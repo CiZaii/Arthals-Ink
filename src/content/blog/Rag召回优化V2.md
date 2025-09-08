@@ -6,7 +6,7 @@ tags:
   - Rag
   - 召回
 language: 中文
-abbrlink: rag-retrieval
+slug: rag-retrieval
 ---
 
 ##  方案一（召回后置处理）：干扰率处理方案

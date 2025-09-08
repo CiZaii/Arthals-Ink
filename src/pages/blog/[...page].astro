@@ -2,11 +2,12 @@
 import type { GetStaticPaths, Page } from 'astro'
 import type { CollectionEntry } from 'astro:content'
 
-import { Paginator, PostPreview } from 'astro-pure/components/pages'
+import { Paginator } from 'astro-pure/components/pages'
 import { getBlogCollection, getUniqueTags, sortMDByDate } from 'astro-pure/server'
 import { Button, Icon } from 'astro-pure/user'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import config from '@/site-config'
+import CustomPostPreview from '@/components/CustomPostPreview.astro'
 
 export const prerender = true
 
@@ -66,14 +67,19 @@ const paginationProps = {
               <span class='text-muted-foreground'>
                 Page {page.currentPage} - Showing {page.data.length} of {collectionsCount} posts
               </span>
-              <a aria-label='View all blog by years' href='/archives' data-astro-prefetch>
-                View all posts by years →
-              </a>
+              <div class='flex gap-4 flex-wrap'>
+                <a aria-label='View all blog by years' href='/archives' data-astro-prefetch>
+                  View all posts by years →
+                </a>
+                <a aria-label='View article index' href='/articles' data-astro-prefetch>
+                  文章索引 →
+                </a>
+              </div>
             </div>
             {/* posts */}
             <ul class='flex flex-col gap-y-4 text-start'>
               {page.data.map((post) => (
-                <PostPreview {post} detailed />
+                <CustomPostPreview {post} detailed />
               ))}
             </ul>
             <Paginator {...paginationProps} />

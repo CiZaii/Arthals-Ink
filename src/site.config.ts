@@ -53,6 +53,7 @@ export const theme = {
   header: {
     menu: [
       { title: 'Blog', link: '/blog' },
+      { title: 'Articles', link: '/articles' },
       { title: 'Archive', link: '/projects' },
       { title: 'About', link: '/about' }
     ]

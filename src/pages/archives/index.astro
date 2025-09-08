@@ -22,6 +22,11 @@ const meta = {
   <main class='mt-6 lg:mt-10'>
     <div id='content-header' class='animate'>
       <h1 class='mb-6 text-3xl font-medium'>Archives</h1>
+      <div class='mb-6 text-sm'>
+        <a aria-label='View article index' href='/articles' data-astro-prefetch class='text-primary hover:underline'>
+          查看文章索引 →
+        </a>
+      </div>
     </div>
 
     {allPosts.length === 0 && <p>No posts yet.</p>}
