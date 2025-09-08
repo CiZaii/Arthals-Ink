@@ -6,27 +6,26 @@ tags:
   - Rag
 language: 中文
 abbrlink: rag
-draft: true
 ---
 
-#### 前言
+## 前言
 
 检索增强生成（RAG）已经成为构建智能问答、知识库助手的核心技术。然而，一个基础的 RAG 系统在面对复杂业务场景时，其检索模块的准确性往往成为瓶颈。
 
 -----
 
-#### 1、 RAG优化方案
+## 1、 RAG优化方案
 
 1.  **混合检索 (Hybrid Search)**: 融合传统关键词（BM25）与现代向量（Semantic）搜索，兼顾精确匹配与语义理解。
 2.  **Reranker 精排**: 使用更强大的 AI 模型对初步检索结果进行二次排序，提升顶层结果的相关性。
 3.  **排序与体验优化**: 引入标题加权、日期衰减等策略优化排序，并通过高亮和聚类提升用户体验。
 4.  **智能查询扩展**: 结合动态词库和多种匹配模式（Match/Match Phrase），更好地理解用户意图。
 
-#### 2、 第一步：实现混合检索 (Hybrid Search)
+## 2、 第一步：实现混合检索 (Hybrid Search)
 
 混合检索是提升召回率和相关性的第一道防线。我们将在 Elasticsearch 中同时执行 BM25 关键词搜索和向量搜索，并融合其结果。
 
-###### 准备工作
+### 准备工作
 
 首先，在你的 `pom.xml` 中加入 Elasticsearch Java 客户端的依赖：
 
@@ -43,7 +42,7 @@ draft: true
 </dependency>
 ```
 
-###### 示例代码
+### 示例代码
 
 假设我们的索引 `documents` 中包含 `title`、`content` (text类型) 和 `content_vector` (dense\_vector类型) 字段。
 
@@ -101,11 +100,11 @@ public SearchResponse<MyDocument> hybridSearch(String userQuery, float[] queryVe
 * 我们构建了一个 `knn` 查询来进行向量搜索。`queryVector` 需要通过一个 Embedding 模型服务（如 OpenAI、Hugging Face）提前生成。
 * 在 Elasticsearch 8.4+ 中，可以直接将 `query` 和 `knn` 放在同一个请求中，ES 会自动进行分数融合。
 
-#### 3、 第二步：引入 Reranker 模型精排
+## 3、 第二步：引入 Reranker 模型精排
 
 混合搜索召回了 Top-N 个候选文档，现在我们用 Reranker 模型给它们打一个更准的分数。Reranker 通常作为一个独立的微服务存在。
 
-###### 示例代码
+### 示例代码
 
 我们将模拟一个 API 调用，将查询和候选文档发送给 Reranker 服务。
 
@@ -178,11 +177,11 @@ private List<Double> parseScores(String jsonResponse) {
 * Reranker 服务（通常基于 Cross-Encoder 模型）返回一个相关性分数列表。
 * Java 客户端接收到分数后，对原始结果列表进行重新排序，得到最终的精准排序。
 
-#### 4、 第三步：排序优化与体验增强
+## 4、 第三步：排序优化与体验增强
 
 除了 Reranker，我们还可以利用 Elasticsearch 的内置功能进一步优化排序和用户体验。
 
-###### 日期衰减排序 (Date Decay)
+### 日期衰减排序 (Date Decay)
 
 对于新闻、日志等时效性强的文档，新发布的应该排名更靠前。
 
@@ -222,7 +221,7 @@ public SearchResponse<MyDocument> searchWithDateDecay(String userQuery) throws I
 * 我们使用了 `function_score` 查询，它允许我们修改由主查询 `matchQuery` 计算出的 `_score`。
 * `gauss` 函数定义了一个衰减曲线：离 `now`（当前时间）越远的文档，其分数衰减得越厉害。
 
-###### 结果高亮 (Highlighting)
+### 结果高亮 (Highlighting)
 
 让用户快速定位到文档中的匹配项。
 
@@ -259,9 +258,9 @@ public SearchResponse<MyDocument> searchWithHighlight(String userQuery) throws I
 * 在查询请求中增加了 `.highlight()` 部分，指定要高亮的字段和包裹的 HTML 标签。
 * 在收到响应后，高亮片段在 `hit.highlight()` 中返回，你需要将其取出并附加到你的数据对象上，以便前端渲染。
 
-#### 5、 第四步：智能查询扩展
+## 5、 第四步：智能查询扩展
 
-###### 双检索模式 (Match / Match Phrase)
+### 双检索模式 (Match / Match Phrase)
 
 根据场景提供不同精度的搜索。
 
@@ -291,7 +290,7 @@ public Query createMatchPhraseQuery(String userQuery) {
 * `match` 查询会将 "quick brown fox" 分词，并查找包含 `quick` 或 `brown` 或 `fox` 的文档。
 * `match_phrase` 查询会严格查找 "quick brown fox" 这个连续的短语。`slop` 参数可以增加一些灵活性。
 
-###### 动态词库 (Dynamic Thesaurus)
+### 动态词库 (Dynamic Thesaurus)
 
 动态词库的实现偏向于架构设计。一个常见的模式是：
 
@@ -303,7 +302,7 @@ public Query createMatchPhraseQuery(String userQuery) {
 
 例如，如果词库里有 `ai -> 人工智能`，那么搜索 `ai` 时，ES 会自动扩展为搜索 `(ai OR 人工智能)`。
 
-#### 6. 最终整合：构建完整的RAG流程
+## 6. 最终整合：构建完整的RAG流程
 
 现在，我们将所有部分串联起来，形成一个完整的检索流程。
 
