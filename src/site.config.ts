@@ -1,10 +1,10 @@
-import type { CardListData, Config, IntegrationUserConfig, ThemeUserConfig } from 'astro-pure/types';
+import type { Config, IntegrationUserConfig, ThemeUserConfig } from 'astro-pure/types';
 
 
 
 
 
-export const theme: ThemeUserConfig = {
+export const theme = {
   // === Basic configuration ===
   /** Title for your website. Will be used in metadata and as browser tab title. */
   title: "CiZai' ink",
