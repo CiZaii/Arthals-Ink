@@ -1,6 +1,6 @@
 // @ts-check
 
-import { rehypeHeadingIds } from '@astrojs/markdown-remark'
+import rehypeSlug from 'rehype-slug'
 // Adapter
 // import vercel from '@astrojs/vercel'
 // import node from '@astrojs/node'
@@ -10,7 +10,6 @@ import { defineConfig } from 'astro/config'
 import rehypeKatex from 'rehype-katex'
 import { remarkAlert } from 'remark-github-blockquote-alert'
 import remarkMath from 'remark-math'
-import UnoCSS from 'unocss/astro'
 
 // Others
 // import { visualizer } from 'rollup-plugin-visualizer'
@@ -81,7 +80,7 @@ export default defineConfig({
     remarkPlugins: [remarkMath, remarkAlert],
     rehypePlugins: [
       [rehypeKatex, { strict: false }],
-      rehypeHeadingIds,
+      rehypeSlug,
       [
         rehypeAutolinkHeadings,
         {

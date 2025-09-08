@@ -11,7 +11,7 @@ const bgMuted = 'hsl(var(--muted) / var(--un-bg-opacity, 1))'
 const typographyConfig = {
   cssExtend: {
     // Title
-    'h2,h3,h4,h5,h6': {
+    'h1,h2,h3,h4,h5,h6': {
       'scroll-margin-top': '3rem',
       'font-weight': '500',
       color: fg

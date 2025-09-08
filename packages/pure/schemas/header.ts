@@ -10,7 +10,7 @@ export const HeaderMenuSchema = () =>
     )
     .default([
       { title: 'Blog', link: '/blog' },
-      { title: 'Projects', link: '/projects' },
+      { title: 'Archive', link: '/projects' },
       { title: 'Links', link: '/links' },
       { title: 'About', link: '/about' }
     ])

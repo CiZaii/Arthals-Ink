@@ -7,12 +7,12 @@ import type { CardListData, Config, IntegrationUserConfig, ThemeUserConfig } fro
 export const theme: ThemeUserConfig = {
   // === Basic configuration ===
   /** Title for your website. Will be used in metadata and as browser tab title. */
-  title: "Arthals' ink",
+  title: "CiZai' ink",
   /** Will be used in index page & copyright declaration */
-  author: 'Arthals',
-  since: 2024,
+  author: 'CiZai',
+  since: 2025,
   /** Description metadata for your website. Can be used in page metadata. */
-  description: '所见高山远木，阔云流风；所幸岁月盈余，了无拘束',
+  description: '栀子比众木  人间诚未多',
   /** The default favicon for your site which should be a path to an image in the `public/` directory. */
   favicon: '/favicon/favicon.ico',
   /** Specify the default language for this site. */
@@ -53,8 +53,7 @@ export const theme: ThemeUserConfig = {
   header: {
     menu: [
       { title: 'Blog', link: '/blog' },
-      { title: 'Projects', link: '/projects' },
-      { title: 'Links', link: '/links' },
+      { title: 'Archive', link: '/projects' },
       { title: 'About', link: '/about' }
     ]
   },
@@ -66,21 +65,12 @@ export const theme: ThemeUserConfig = {
     // year: `© 2019 - ${new Date().getFullYear()}`,
     links: [
       // Registration link
-      {
-        title: '京ICP备2022002869号-2',
-        link: 'https://beian.miit.gov.cn/',
-        style: 'text-xs text-muted-foreground' // Uno/TW CSS class
-      },
-      {
-        title: '萌ICP备20254869号',
-        link: 'https://icp.gov.moe/?keyword=20254869',
-        style: 'text-xs text-muted-foreground' // Uno/TW CSS class
-      }
+
     ],
     /** Enable displaying a “Astro & Pure theme powered” link in your site’s footer. */
     credits: false,
     /** Optional details about the social media accounts for this site. */
-    social: { github: 'https://github.com/zhuozhiyongde', email: 'mailto:zhuozhiyongde@126.com' }
+    social: { github: 'https://github.com/CiZaii', email: 'mailto:zang@linux.do' }
   },
 
   content: {
@@ -100,19 +90,6 @@ export const theme: ThemeUserConfig = {
 }
 
 export const integ: IntegrationUserConfig = {
-  // Links management
-  // See: https://astro-pure.js.org/docs/integrations/links
-  links: {
-    // Friend logbook
-    logbook: [{ date: '2024-01-16', content: '开始接纳新的伙伴！' }],
-    // Yourself link info
-    applyTip: [
-      { name: 'Name', val: theme.title },
-      { name: 'Desc', val: theme.description || 'Null' },
-      { name: 'Link', val: 'https://arthals.ink/' },
-      { name: 'Avatar', val: 'https://cdn.arthals.ink/Arthals.png' }
-    ]
-  },
   // Enable page search function
   pagefind: true,
   // Add a random quote to the footer (default on homepage footer)
@@ -147,7 +124,7 @@ export const integ: IntegrationUserConfig = {
   waline: {
     enable: true,
     // Server service link
-    server: 'https://waline.arthals.ink',
+    server: 'https://commit.wl.do',
     // Refer https://waline.js.org/en/guide/features/emoji.html
     emoji: ['bmoji', 'weibo'],
     // Refer https://waline.js.org/en/reference/client/props.html
