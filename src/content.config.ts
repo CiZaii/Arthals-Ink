@@ -38,7 +38,19 @@ const blog = defineCollection({
       // Special fields
       comment: z.boolean().default(true),
       // Custom slug for URL (optional)
-      slug: z.string().optional()
+      slug: z.string().optional(),
+      // Encrypted post support (optional)
+      encrypted: z.boolean().default(false).optional(),
+      encryption: z
+        .object({
+          alg: z.string().optional(),
+          prfSalt: z.string(),
+          wrappedKey: z.string(),
+          iv: z.string(),
+          cipherText: z.string(),
+          allowCredentials: z.array(z.string()).optional()
+        })
+        .optional()
     })
 })
 

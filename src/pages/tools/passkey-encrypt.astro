@@ -1,0 +1,169 @@
+---
+import CommonPage from '@/layouts/CommonPage.astro'
+---
+
+<CommonPage title='通行密钥加密工具' back='/blog'>
+  <div class='prose max-w-none'>
+    <p>使用本工具为文章生成基于通行密钥 (WebAuthn PRF) 的加密内容。生成后把下方 YAML 片段放入文章 Frontmatter，并删除正文原文。</p>
+
+    <div class='not-prose my-4 rounded-md border p-4'>
+      <label class='block text-sm font-medium mb-1' for='plaintext'>文章 HTML 原文</label>
+      <textarea id='plaintext' class='w-full rounded border p-2 font-mono' rows='10' placeholder='将要加密的 HTML 内容粘贴到这里'></textarea>
+
+      <div class='mt-3 grid gap-3 sm:grid-cols-2'>
+        <div>
+          <label class='block text-sm font-medium mb-1' for='salt'>PRF Salt (base64url)</label>
+          <input id='salt' class='w-full rounded border p-2 font-mono' placeholder='自动生成' />
+        </div>
+        <div>
+          <label class='block text-sm font-medium mb-1' for='cred'>通行密钥 ID (可选，自动填充)</label>
+          <input id='cred' class='w-full rounded border p-2 font-mono' placeholder='将自动写入当前选择的通行密钥 ID' />
+        </div>
+      </div>
+
+      <div class='mt-3 flex flex-wrap items-center gap-2'>
+        <button id='gen-salt' class='btn btn-secondary'>生成随机 Salt</button>
+        <button id='do-encrypt' class='btn btn-primary'>选择通行密钥并加密</button>
+        <span id='status' class='text-sm text-muted-foreground'></span>
+      </div>
+    </div>
+
+    <div class='not-prose my-4 rounded-md border p-4'>
+      <label class='block text-sm font-medium mb-1' for='yaml'>Frontmatter YAML (复制到文章)</label>
+      <textarea id='yaml' class='w-full rounded border p-2 font-mono' rows='12' readonly></textarea>
+      <div class='mt-2'>
+        <button id='copy-yaml' class='btn btn-outline'>复制 YAML</button>
+      </div>
+    </div>
+
+    <details class='mt-6'>
+      <summary class='cursor-pointer text-sm text-muted-foreground'>原理说明</summary>
+      <ul>
+        <li>AES-GCM(256) 加密正文，随机 12 字节 IV。</li>
+        <li>使用 WebAuthn PRF 扩展计算对称密钥原始数据，再导入为 AES-KW 包装密钥。</li>
+        <li>用 AES-KW 包装 CEK（内容密钥），页面仅保存包装后的 CEK 与密文。</li>
+      </ul>
+    </details>
+  </div>
+
+  <script type='module'>
+    const qs = (id) => document.getElementById(id)
+    const $plaintext = qs('plaintext')
+    const $salt = qs('salt')
+    const $cred = qs('cred')
+    const $status = qs('status')
+    const $yaml = qs('yaml')
+
+    const setStatus = (t, kind='info') => {
+      $status.textContent = t
+      $status.className = 'text-sm ' + (kind === 'error' ? 'text-red-500' : kind === 'ok' ? 'text-green-600' : 'text-muted-foreground')
+    }
+
+    const bytesToB64url = (buf) => {
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)))
+      return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+    }
+    const b64urlToBytes = (s) => {
+      s = (s || '').trim()
+      if (!s) return new Uint8Array()
+      s = s.replace(/-/g, '+').replace(/_/g, '/')
+      const pad = s.length % 4
+      if (pad) s = s + '='.repeat(4 - pad)
+      const bin = atob(s)
+      const out = new Uint8Array(bin.length)
+      for (let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i)
+      return out
+    }
+    const randBytes = (n) => {
+      const a = new Uint8Array(n)
+      crypto.getRandomValues(a)
+      return a
+    }
+
+    qs('gen-salt').addEventListener('click', () => {
+      $salt.value = bytesToB64url(randBytes(32))
+      setStatus('已生成随机 Salt')
+    })
+
+    async function getWrappingKey(prfSalt) {
+      if (!('credentials' in navigator)) throw new Error('此浏览器不支持 WebAuthn')
+      const challenge = randBytes(32)
+      const publicKey = {
+        challenge,
+        userVerification: 'preferred',
+        extensions: { prf: { eval: { first: prfSalt } } }
+      }
+      const cred = await navigator.credentials.get({ publicKey })
+      if (!cred) throw new Error('用户取消或无可用通行密钥')
+      const credId = new Uint8Array(cred.rawId)
+      $cred.value = bytesToB64url(credId)
+      const ext = cred.getClientExtensionResults && cred.getClientExtensionResults()
+      const prf = ext && ext.prf
+      if (!prf || !prf.results || !prf.results.first) throw new Error('通行密钥未返回 PRF 结果')
+      const prfBytes = new Uint8Array(prf.results.first)
+      const wrappingKey = await crypto.subtle.importKey('raw', prfBytes, 'AES-KW', false, ['wrapKey', 'unwrapKey'])
+      return { wrappingKey, credId }
+    }
+
+    async function doEncrypt() {
+      try {
+        setStatus('准备通行密钥…')
+        const saltBytes = b64urlToBytes($salt.value || bytesToB64url(randBytes(32)))
+        if (!$salt.value) $salt.value = bytesToB64url(saltBytes)
+
+        const { wrappingKey, credId } = await getWrappingKey(saltBytes)
+        setStatus('生成内容密钥…')
+        const cek = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+        const cekRaw = await crypto.subtle.exportKey('raw', cek)
+        setStatus('包装内容密钥…')
+        const wrappedKey = await crypto.subtle.wrapKey('raw', cek, wrappingKey, 'AES-KW')
+
+        setStatus('加密正文…')
+        const iv = randBytes(12)
+        const enc = new TextEncoder().encode($plaintext.value || '')
+        const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cek, enc)
+
+        const payload = {
+          encrypted: true,
+          encryption: {
+            alg: 'AES-256-GCM',
+            prfSalt: bytesToB64url(saltBytes),
+            wrappedKey: bytesToB64url(wrappedKey),
+            iv: bytesToB64url(iv),
+            cipherText: bytesToB64url(ciphertext),
+            allowCredentials: [$cred.value].filter(Boolean)
+          }
+        }
+
+        const yaml = `encrypted: true\n` +
+`encryption:\n` +
+`  alg: AES-256-GCM\n` +
+`  prfSalt: ${payload.encryption.prfSalt}\n` +
+`  wrappedKey: ${payload.encryption.wrappedKey}\n` +
+`  iv: ${payload.encryption.iv}\n` +
+`  cipherText: ${payload.encryption.cipherText}\n` +
+`${payload.encryption.allowCredentials.length ? `  allowCredentials:\n    - ${payload.encryption.allowCredentials[0]}\n` : ''}`
+
+        $yaml.value = yaml
+        setStatus('完成。将 YAML 复制到 Frontmatter 并清空正文', 'ok')
+      } catch (e) {
+        console.error(e)
+        setStatus('失败：' + (e && e.message ? e.message : '未知错误'), 'error')
+      }
+    }
+
+    qs('do-encrypt').addEventListener('click', () => {
+      doEncrypt()
+    })
+
+    qs('copy-yaml').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText($yaml.value || '')
+        setStatus('已复制 YAML', 'ok')
+      } catch {
+        setStatus('复制失败，请手动选择复制', 'error')
+      }
+    })
+  </script>
+</CommonPage>
+

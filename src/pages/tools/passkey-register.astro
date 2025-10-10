@@ -1,0 +1,92 @@
+---
+import CommonPage from '@/layouts/CommonPage.astro'
+import config from 'virtual:config'
+---
+
+<CommonPage title='注册通行密钥' back='/blog'>
+  <div class='prose max-w-none'>
+    <p>在当前站点为你的设备创建并保存一个通行密钥（Passkey）。建议在手机上打开本页完成注册，这样通行密钥会直接保存在手机的密码管理器中并开启同步。</p>
+
+    <div class='not-prose my-4 rounded-md border p-4'>
+      <div class='grid gap-3 sm:grid-cols-2'>
+        <div>
+          <label class='block text-sm font-medium mb-1'>站点 (RP ID)</label>
+          <input class='w-full rounded border p-2 font-mono' value={Astro.url.hostname} readonly />
+        </div>
+        <div>
+          <label class='block text-sm font-medium mb-1'>显示名称</label>
+          <input id='displayName' class='w-full rounded border p-2' value='Owner of {config.title}' />
+        </div>
+      </div>
+
+      <div class='mt-3 flex flex-wrap items-center gap-2'>
+        <button id='create' class='btn btn-primary'>创建通行密钥</button>
+        <span id='status' class='text-sm text-muted-foreground'></span>
+      </div>
+
+      <div class='mt-3 hidden' id='result'>
+        <div class='text-sm text-muted-foreground mb-1'>Credential ID (base64url)：</div>
+        <textarea id='credId' class='w-full rounded border p-2 font-mono' rows='2' readonly></textarea>
+        <div class='mt-2'>
+          <button id='copy' class='btn btn-outline'>复制 ID</button>
+        </div>
+      </div>
+    </div>
+
+    <details class='mt-6'>
+      <summary class='cursor-pointer text-sm text-muted-foreground'>说明</summary>
+      <ul>
+        <li>此操作不会向服务器发送数据，通行密钥将保存在你的设备中（并根据系统设置同步到云端）。</li>
+        <li>若你的设备或安全钥匙不支持 PRF 扩展，则无法用于解锁加密文章。</li>
+        <li>通行密钥与域名绑定，请在最终线上域名下完成注册。</li>
+      </ul>
+    </details>
+  </div>
+
+  <script type='module'>
+    const $ = (id) => document.getElementById(id)
+    const $status = $('status')
+    const setStatus = (t, kind='info') => {
+      $status.textContent = t
+      $status.className = 'text-sm ' + (kind === 'error' ? 'text-red-500' : kind === 'ok' ? 'text-green-600' : 'text-muted-foreground')
+    }
+    const bytesToB64url = (buf) => {
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)))
+      return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+    }
+    const randBytes = (n) => { const a = new Uint8Array(n); crypto.getRandomValues(a); return a }
+
+    $('create').addEventListener('click', async () => {
+      try {
+        setStatus('请求创建…')
+        const userId = randBytes(16)
+        const displayName = $('displayName').value || 'Owner'
+        const publicKey = {
+          rp: { name: document.title, id: location.hostname },
+          user: { id: userId, name: 'owner@' + location.hostname, displayName },
+          challenge: randBytes(32),
+          pubKeyCredParams: [ { type: 'public-key', alg: -7 } ], // ES256
+          timeout: 60000,
+          attestation: 'none',
+          authenticatorSelection: { residentKey: 'preferred', requireResidentKey: false, userVerification: 'preferred' },
+          // Enable PRF at registration so the authenticator seeds PRF key material
+          extensions: { prf: { enable: true } }
+        }
+        const cred = await navigator.credentials.create({ publicKey })
+        if (!cred) throw new Error('用户取消或创建失败')
+        const id = bytesToB64url(new Uint8Array(cred.rawId))
+        $('credId').value = id
+        $('result').classList.remove('hidden')
+        setStatus('已创建并保存在本机', 'ok')
+      } catch (e) {
+        console.error(e)
+        setStatus('失败：' + (e && e.message ? e.message : '未知错误'), 'error')
+      }
+    })
+
+    $('copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText($('credId').value || ''); setStatus('已复制 ID', 'ok') }
+      catch { setStatus('复制失败，请手动选择复制', 'error') }
+    })
+  </script>
+</CommonPage>
