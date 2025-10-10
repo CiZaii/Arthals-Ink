@@ -46,7 +46,6 @@ const socialImage = heroImage
   : '/images/social-card.png'
 const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString()
 const primaryColor = data.heroImage?.color ?? 'hsl(var(--primary) / var(--un-text-opacity))'
-const isEncryptedPost = Boolean((data as any).encrypted && (data as any).encryption)
 ---
 
 <PageLayout
@@ -62,35 +61,7 @@ const isEncryptedPost = Boolean((data as any).encrypted && (data as any).encrypt
     </Fragment>
   </Hero>
 
-  {!isEncryptedPost && <slot />}
-
-  {isEncryptedPost && (
-    <div id='encrypted-post'
-      data-alg={(data as any).encryption.alg ?? 'AES-256-GCM'}
-      data-iv={(data as any).encryption.iv}
-      data-ciphertext={(data as any).encryption.cipherText}
-      data-wrappedkey={(data as any).encryption.wrappedKey}
-      data-prf-salt={(data as any).encryption.prfSalt}
-      data-allowcreds={JSON.stringify((data as any).encryption.allowCredentials ?? [])}
-      class='rounded-lg border p-4 my-4'
-    >
-      <div class='flex items-center gap-3'>
-        <span class='i-heroicons-lock-closed-20-solid text-xl' aria-hidden='true'></span>
-        <div>
-          <p class='font-medium'>该文章已加密</p>
-          <p class='text-sm text-muted-foreground'>使用通行密钥解锁以阅读内容</p>
-        </div>
-      </div>
-      <div class='mt-3 flex items-center gap-2'>
-        <button id='unlock-btn' class='btn btn-primary'>解锁文章</button>
-        <span id='unlock-status' class='text-sm text-muted-foreground'></span>
-      </div>
-      <div id='decrypted-content' class='mt-4 hidden'></div>
-      <noscript>
-        <p class='text-sm text-red-500 mt-3'>需要启用 JavaScript 才能解锁阅读。</p>
-      </noscript>
-    </div>
-  )}
+  <slot />
 
   {config.signature && <Signature />}
   <Fragment slot='bottom'>
@@ -108,96 +79,3 @@ const isEncryptedPost = Boolean((data as any).encrypted && (data as any).encrypt
 </PageLayout>
 
 {integ.mediumZoom.enable && <MediumZoom />}
-
-{isEncryptedPost && (
-  <script type='module'>
-    const container = document.getElementById('encrypted-post')
-    const unlockBtn = document.getElementById('unlock-btn')
-    const statusEl = document.getElementById('unlock-status')
-    const outputEl = document.getElementById('decrypted-content')
-
-    function setStatus(msg, kind = 'info') {
-      if (!statusEl) return
-      statusEl.textContent = msg
-      statusEl.className = 'text-sm ' + (kind === 'error' ? 'text-red-500' : kind === 'ok' ? 'text-green-600' : 'text-muted-foreground')
-    }
-
-    const b64urlToBytes = (s) => {
-      s = s.replace(/-/g, '+').replace(/_/g, '/')
-      const pad = s.length % 4
-      if (pad) s = s + '='.repeat(4 - pad)
-      const binStr = atob(s)
-      const bytes = new Uint8Array(binStr.length)
-      for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i)
-      return bytes
-    }
-    const bytesToB64url = (buf) => {
-      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)))
-      return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
-    }
-
-    async function deriveWrappingKey(prfSaltBytes, allowCreds) {
-      if (!('credentials' in navigator)) throw new Error('此浏览器不支持 WebAuthn')
-
-      const challenge = crypto.getRandomValues(new Uint8Array(32))
-      const publicKey = {
-        challenge,
-        userVerification: 'preferred',
-      }
-      if (Array.isArray(allowCreds) && allowCreds.length) {
-        publicKey.allowCredentials = allowCreds.map((idB64) => ({
-          type: 'public-key',
-          id: b64urlToBytes(idB64),
-          transports: ['internal', 'hybrid', 'usb', 'nfc', 'ble']
-        }))
-      }
-      publicKey.extensions = { prf: { eval: { first: prfSaltBytes } } }
-
-      const cred = await navigator.credentials.get({ publicKey })
-      const ext = cred.getClientExtensionResults && cred.getClientExtensionResults()
-      const prf = ext && ext.prf
-      if (!prf || !prf.results || !prf.results.first) throw new Error('通行密钥不支持 PRF，或被拒绝')
-      const prfBytes = new Uint8Array(prf.results.first)
-      const wrappingKey = await crypto.subtle.importKey('raw', prfBytes, 'AES-KW', false, ['wrapKey', 'unwrapKey'])
-      return wrappingKey
-    }
-
-    async function decryptPost() {
-      try {
-        setStatus('请求通行密钥…')
-        const iv = b64urlToBytes(container.dataset.iv)
-        const cipherBytes = b64urlToBytes(container.dataset.ciphertext)
-        const wrappedKeyBytes = b64urlToBytes(container.dataset.wrappedkey)
-        const prfSalt = b64urlToBytes(container.dataset.prfSalt)
-        const allowCredIds = JSON.parse(container.dataset.allowcreds || '[]')
-
-        const wrappingKey = await deriveWrappingKey(prfSalt, allowCredIds)
-        setStatus('解锁内容密钥…')
-        const cek = await crypto.subtle.unwrapKey(
-          'raw',
-          wrappedKeyBytes.buffer,
-          wrappingKey,
-          'AES-KW',
-          { name: 'AES-GCM', length: 256 },
-          false,
-          ['decrypt']
-        )
-
-        setStatus('解密文章内容…')
-        const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cek, cipherBytes)
-        const html = new TextDecoder().decode(plaintext)
-        outputEl.innerHTML = html
-        outputEl.classList.remove('hidden')
-        setStatus('已解锁', 'ok')
-        if (unlockBtn) unlockBtn.classList.add('hidden')
-      } catch (e) {
-        console.error(e)
-        setStatus('解锁失败：' + (e && e.message ? e.message : '未知错误'), 'error')
-      }
-    }
-
-    unlockBtn?.addEventListener('click', () => {
-      decryptPost()
-    })
-  </script>
-)}
