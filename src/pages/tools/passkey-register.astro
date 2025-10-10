@@ -15,7 +15,7 @@ import config from 'virtual:config'
         </div>
         <div>
           <label class='block text-sm font-medium mb-1'>显示名称</label>
-          <input id='displayName' class='w-full rounded border p-2' value='Owner of {config.title}' />
+          <input id='displayName' class='w-full rounded border p-2' value={`Owner of ${config.title}`} />
         </div>
       </div>
 
