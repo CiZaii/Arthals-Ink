@@ -19,7 +19,7 @@ const meta = {
 <PageLayout {meta}>
   <Button title='返回' href='/blog' variant='back' />
 
-  <main class='mt-6 lg:mt-10'>
+  <main class='mt-8 lg:mt-10'>
     <div id='content-header' class='animate'>
       <h1 class='mb-6 text-3xl font-medium'>归档</h1>
     </div>
@@ -29,9 +29,9 @@ const meta = {
     <section id='content' class='animate' aria-label='Blog post list'>
       {
         allPostsByYear.map(([year, posts]) => (
-          <div class='relative mt-20'>
+          <div class='relative mt-20 overflow-hidden'>
             <h2
-              class='absolute -start-6 -top-16 z-0 text-9xl font-bold text-transparent opacity-10'
+              class='absolute -start-2 -top-12 z-0 text-7xl font-bold text-transparent opacity-10 md:-start-6 md:-top-16 md:text-9xl'
               style='-webkit-text-stroke-width:2px;-webkit-text-stroke-color:hsl(var(--foreground)/var(--un-text-opacity))'
             >
               <samp>{year}</samp>
